@@ -14,4 +14,8 @@
         <description>Created after removal of "Starter" from Zero Studio Code Module</description>
         <accepts>Starter.html</accepts>
     </rule>
+    <rule id="7208a32f">
+        <description>Created after removal of "ThanksCarbon" from Zero Studio Code Module</description>
+        <accepts>ThanksCarBon.html</accepts>
+    </rule>
 </rules>

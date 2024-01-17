@@ -1,0 +1,371 @@
+<!DOCTYPE html SYSTEM "about:legacy-compat"><html lang="en-US" data-colors-preset="contrast" data-primary-color="#307FFF"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta charset="UTF-8"><meta name="robots" content="noindex">  <meta name="built-on" content="2024-01-17T14:45:20.73139382"><meta name="build-number" content="${buildNumber}">       <title>ThanksCarbon | Help Instance</title><script id="virtual-toc-data" type="application/json">[{"id":"map-controller","level":0,"title":"MAP Controller","anchor":"#map-controller"},{"id":"notification-helper","level":0,"title":"Notification Helper","anchor":"#notification-helper"},{"id":"locationinterface","level":0,"title":"LocationInterface","anchor":"#locationinterface"}]</script><script id="topic-shortcuts" type="application/json"></script><link href="https://resources.jetbrains.com/writerside/apidoc/6.6.6-b205/app.css" rel="stylesheet">   <link rel="apple-touch-icon" sizes="180x180" href="https://jetbrains.com/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="https://jetbrains.com/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="https://jetbrains.com/favicon-16x16.png"><link rel="manifest" href="https://jetbrains.com/site.webmanifest"><link rel="mask-icon" href="https://jetbrains.com/safari-pinned-tab.svg" color="#000000"><meta name="msapplication-TileColor" content="#000000"/><meta name="msapplication-TileImage" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-144x144.png"/><meta name="msapplication-square70x70logo" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-70x70.png"/><meta name="msapplication-square150x150logo" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-150x150.png"/><meta name="msapplication-wide310x150logo" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-310x150.png"/><meta name="msapplication-square310x310logo" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-310x310.png"/>  <meta name="image" content=""><!-- Open Graph --><meta property="og:title" content="ThanksCarbon | Help Instance"/><meta property="og:description" content=""/><meta property="og:image" content=""/><meta property="og:site_name" content="Help Instance Help"/><meta property="og:type" content="website"/><meta property="og:locale" content="en_US"/><meta property="og:url" content="thankscarbon.html"/><!-- End Open Graph --><!-- Twitter Card --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:site" content=""><meta name="twitter:title" content="ThanksCarbon | Help Instance"><meta name="twitter:description" content=""><meta name="twitter:creator" content=""><meta name="twitter:image:src" content=""><!-- End Twitter Card --><!-- Schema.org WebPage --><script type="application/ld+json"> { "@context": "http://schema.org", "@type": "WebPage", "@id": "thankscarbon.html#webpage", "url": "thankscarbon.html", "name": "ThanksCarbon | Help Instance", "description": "", "image": "", "inLanguage":"en-US" }</script><!-- End Schema.org --><!-- Schema.org WebSite --><script type="application/ld+json"> { "@type": "WebSite", "@id": "/#website", "url": "/", "name": "Help Instance Help" }</script><!-- End Schema.org --></head>      <body data-id="ThanksCarbon" data-main-title="ThanksCarbon" data-article-props="{&quot;seeAlsoStyle&quot;:&quot;links&quot;}"  data-template="article"  data-breadcrumbs="Code-Module.md|Code Module"  >   <div class="wrapper"><main class="panel _main"><header class="panel__header"><div class="container"><h3>Help Instance  Help</h3><div class="panel-trigger"></div></div></header><section class="panel__content"><div class="container"><article class="article" data-shortcut-switcher="inactive"><h1 data-toc="ThanksCarbon"   id="ThanksCarbon.md">ThanksCarbon</h1>  <ul class="list _ul" id="271a297e_2436"><li class="list__item" id="271a297e_2437"><p>해당 프로젝트의 경우, 유저가 빠르게 파이어베이스의 문서에 접근을 해야하다 보니, Firebase SDK와 클라우드 함수 호출을 유동적으로 사용</p></li></ul><section class="chapter"><h2 id="map-controller" data-toc="map-controller"   >MAP Controller</h2><ul class="list _ul" id="271a297e_2438"><li class="list__item" id="271a297e_2439"><p>해당 프로젝트의 경우 구글 지도를 이용한 농부별 자신의 농지 위치를 확인할 수 있었어야 했음.</p></li><li class="list__item" id="271a297e_2440"><p>따라서 expect/actual 키워드를 통해 구글 지도에 관련된 클래스와 인터페이스를 구축 및 개발 진행하였음</p></li></ul><p id="271a297e_2441">SharedModule)</p><div class="code-block" data-lang="kotlin"         >
+interface MapInterface {
+    @Composable
+    fun RenderMap(latFlow: StateFlow&lt;Double?&gt;, lngFlow: StateFlow&lt;Double?&gt;, color: Color)
+    // 기타 필요한 메서드
+    fun autoCompleteAddress(query: String)
+    fun validateAddressAndRenderMap(address: String)
+}
+
+
+expect abstract class PlatformMapImplementation() : MapInterface {
+    val autoCompletePrediction: StateFlow&lt;List&lt;MyAutocompletePrediction&gt;&gt;
+}
+</div><p id="271a297e_2443">AndroidModule)</p><div class="code-block" data-lang="kotlin"         >
+actual abstract class PlatformMapImplementation: MapInterface {
+    protected val _autoCompletedPrediction = MutableStateFlow&lt;List&lt;MyAutocompletePrediction&gt;&gt;(emptyList())
+    actual val autoCompletePrediction: StateFlow&lt;List&lt;MyAutocompletePrediction&gt;&gt;
+        get() = _autoCompletedPrediction
+}
+</div><p id="271a297e_2445">AndroidProject)</p><div class="code-block" data-lang="kotlin"         >
+class MapController(val applicationContext: Context): PlatformMapImplementation() {
+
+    private val TAG = &quot;MapController&quot;
+    private val placesClient by lazy {
+        Places.createClient(applicationContext)
+    }
+
+
+
+    override fun autoCompleteAddress(query: String) {
+        val request = FindAutocompletePredictionsRequest.builder()
+            .setQuery(query)
+            .build()
+
+        placesClient.findAutocompletePredictions(request)
+            .addOnSuccessListener { response -&gt;
+                Log.i(TAG, &quot;response is $response&quot;)
+                val myPredictions = response.autocompletePredictions.map { autocompletePrediction -&gt;
+                    convertToMyAutocompletePrediction(autocompletePrediction)
+                }
+                _autoCompletedPrediction.value = myPredictions
+            }
+            .addOnFailureListener { response -&gt;
+                Log.i(TAG, &quot;response is $response&quot;)
+            }
+    }
+
+    override fun validateAddressAndRenderMap(address: String) {
+        TODO(&quot;Not yet implemented&quot;)
+    }
+
+    @SuppressLint(&quot;StateFlowValueCalledInComposition&quot;)
+    @Composable
+    override fun RenderMap(latFlow: StateFlow&lt;Double?&gt;, lngFlow: StateFlow&lt;Double?&gt;, color: Color) {
+        Log.i(TAG, &quot;color is ${color}&quot;)
+//        val icon: BitmapDescriptor = remember { bitmapDescriptorFromVector(applicationContext, color.toArgb()) }
+        renderMapByGEO(latFlow = latFlow, lngFlow = lngFlow, color, applicationContext)
+    }
+
+    private fun convertToMyAutocompletePrediction(prediction: AutocompletePrediction): MyAutocompletePrediction {
+        return MyAutocompletePrediction(
+            placeId = prediction.placeId,
+            primaryText = prediction.getPrimaryText(null).toString(),
+            secondaryText = prediction.getSecondaryText(null).toString()
+        )
+    }
+}
+
+@Composable
+fun renderMapByGEO(latFlow: StateFlow&lt;Double?&gt;, lngFlow: StateFlow&lt;Double?&gt;, color: Color, context: Context) {
+    // Flow에서 방출하는 값을 State로 변환
+    val lat by latFlow.collectAsState()
+    val lng by lngFlow.collectAsState()
+//    val color by colorRGB.collectAsState()
+
+    val cameraPositionState = rememberCameraPositionState()
+    val markerState = rememberMarkerState()
+
+    var icon = bitmapDescriptorFromVector(context, color.toArgb())
+
+    SharedUtil.Log(&quot;colorRGC is $color&quot;)
+
+
+    LaunchedEffect(lat, lng) {
+        if (lat != null &amp;&amp; lng != null) {
+            val newPosition = CameraPosition.fromLatLngZoom(LatLng(lat!!, lng!!), SharedUtil.cameraZoom)
+            cameraPositionState.move(CameraUpdateFactory.newCameraPosition(newPosition))
+            markerState.position = LatLng(lat!!, lng!!)
+        }
+    }
+    LaunchedEffect(color) {
+        icon = bitmapDescriptorFromVector(context, color.toArgb())
+    }
+
+    if (lat != null &amp;&amp; lng != null &amp;&amp; icon != null) {
+        GoogleMap(
+            modifier = Modifier.fillMaxSize(),
+            cameraPositionState = cameraPositionState
+        ) {
+            Marker(
+                state = markerState,
+                title = &quot;CityPosition&quot;,
+                snippet = &quot;Marker in CintyPosition&quot;,
+                icon = icon,
+                alpha = 1.0f,
+                visible = true
+            )
+
+        }
+    }
+}
+</div><section class="chapter"><h3 id="vector-bitmapdescriptor" data-toc="vector-bitmapdescriptor"   >Vector 이미지를 BitmapDescriptor 로 변환하는 함수</h3><div class="code-block" data-lang="kotlin"         >
+fun bitmapDescriptorFromVector(context: Context, tintColor: Int? = null): BitmapDescriptor {
+    val vectorDrawable = ContextCompat.getDrawable(context, MR.images.location.drawableResId) as VectorDrawable
+    if (tintColor != null) {
+        vectorDrawable.apply {
+            setTint(tintColor)
+            setTintMode(PorterDuff.Mode.SRC_IN)
+        }
+    }
+    vectorDrawable.setBounds(0, 0, vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight)
+    val bitmap = Bitmap.createBitmap(SharedUtil.locationIconSize, SharedUtil.locationIconSize, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+
+    vectorDrawable.setBounds(0, 0, canvas.width, canvas.height)
+    vectorDrawable.draw(canvas)
+
+
+    return BitmapDescriptorFactory.fromBitmap(bitmap)
+}
+</div><p id="271a297e_2448">IOSModule)</p><div class="code-block" data-lang="kotlin"         >
+class MapController(): PlatformMapImplementation() {
+    @Composable
+    override fun RenderMap(latFlow: StateFlow&lt;Double?&gt;, lngFlow: StateFlow&lt;Double?&gt;, color: Color) {
+        renderMapByGEO(
+            modifier = Modifier.fillMaxSize(),
+            latFlow = latFlow,
+            lngFlow = lngFlow,
+            color = color
+        )
+    }
+
+    @OptIn(ExperimentalForeignApi::class)
+    override fun autoCompleteAddress(query: String) {
+        val placesClient = GMSPlacesClient.sharedClient()
+
+        val filter = GMSAutocompleteFilter().apply {
+            type = GMSPlacesAutocompleteTypeFilter.kGMSPlacesAutocompleteTypeFilterAddress
+        }
+
+        placesClient.findAutocompletePredictionsFromQuery(query, filter, null) { predictions, error -&gt;
+            if (error != null) {
+                println(&quot;Autocomplete error: ${error.localizedDescription}&quot;)
+                return@findAutocompletePredictionsFromQuery
+            }
+
+            val myPredictions = predictions?.map { prediction -&gt;
+                convertToMyAutocompletePrediction(prediction as GMSAutocompletePrediction)
+            }
+            if (myPredictions != null) {
+                _autoCompletedPrediction.value = myPredictions
+            }
+        }
+    }
+
+    override fun validateAddressAndRenderMap(address: String) {
+        TODO(&quot;Not yet implemented&quot;)
+    }
+
+    @OptIn(ExperimentalForeignApi::class)
+    private fun convertToMyAutocompletePrediction(prediction: GMSAutocompletePrediction): MyAutocompletePrediction {
+        return MyAutocompletePrediction(
+            placeId = prediction.placeID,
+            primaryText = prediction.attributedPrimaryText.string,
+            secondaryText = prediction.attributedSecondaryText?.string ?: &quot;&quot;
+        )
+    }
+}
+
+@OptIn(ExperimentalForeignApi::class)
+@Composable
+fun renderMapByGEO(
+    modifier: Modifier,
+    latFlow: StateFlow&lt;Double?&gt;,
+    lngFlow: StateFlow&lt;Double?&gt;,
+    color: Color
+) {
+    val lat by latFlow.collectAsState()
+    val lng by lngFlow.collectAsState()
+
+    var isMapRedrawTriggered by remember { mutableStateOf(true) }
+
+    var currentMarker by remember { mutableStateOf&lt;GMSMarker?&gt;(null) }
+
+    val cameraPos = latFlow.value?.let {
+        lngFlow.value?.let { it1 -&gt;
+            CLLocationCoordinate2DMake(
+                latitude = it,
+                longitude = it1
+            )
+        }
+    }
+
+    LaunchedEffect(lat, lng) {
+        if (lat != null &amp;&amp; lng != null) {
+            isMapRedrawTriggered = true
+        }
+    }
+
+    val googleMapView = remember(isMapRedrawTriggered) {
+        GMSMapView().apply {
+            setMyLocationEnabled(true)
+            settings.setScrollGestures(true)
+            settings.setZoomGestures(true)
+            settings.setCompassButton(false)
+            this.setMapStyle(
+                GMSMapStyle.styleWithJSONString(
+                    mapStyle1(),
+                    error = null
+                )
+            )
+        }
+    }
+
+    val delegate = remember { object : NSObject(), GMSMapViewDelegateProtocol {
+        override fun mapView(
+            mapView: GMSMapView,
+            @Suppress(&quot;PARAMETER_NAME_CHANGED_ON_OVERRIDE&quot;)
+            didChangeCameraPosition: GMSCameraPosition
+        ) {
+
+        }
+
+    }}
+
+    UIKitView(
+        modifier = modifier,
+        interactive = true,
+        factory = {
+            googleMapView.apply {
+                setDelegate(delegate)
+                this.selectedMarker = selectedMarker
+                this.setMyLocationEnabled(true)
+            }
+
+            googleMapView
+        },
+        update = { view -&gt;
+            if (isMapRedrawTriggered) {
+                if (lat != null &amp;&amp; lng != null) {
+                    currentMarker?.map = null
+                    currentMarker = GMSMarker().apply {
+                        position = CLLocationCoordinate2DMake(lat!!, lng!!)
+                        title = &quot;Farm&quot;
+                        snippet = &quot;Lat: $lat, Lng: $lng&quot;
+                        icon = markerImageWithColor(color.toUIColor())
+                        map = view
+                    }
+
+                    view.animateToCameraPosition(
+                        GMSCameraPosition.cameraWithLatitude(
+                            latitude = lat!!,
+                            longitude = lng!!,
+                            zoom = 17.0f
+                        )
+                    )
+                }
+
+                isMapRedrawTriggered = false
+            }
+        }
+    )
+}
+</div><p id="271a297e_2450">SwiftProject)</p><div class="code-block" data-lang="swift"         >
+추가바람
+</div></section></section><section class="chapter"><h2 id="notification-helper" data-toc="notification-helper"   >Notification Helper</h2><ul class="list _ul" id="271a297e_2452"><li class="list__item" id="271a297e_2453"><p>해당 프로젝트의 경우 알림을 보낼 수 있었어야 했음.</p></li><li class="list__item" id="271a297e_2454"><p>역시 expect/actual 을 통해 알림을 각 플랫폼에 맞게 구축 및 개발 진행하였음</p><br><p> SharedModule)</p></li></ul><div class="code-block" data-lang="kotlin"         >
+expect interface NotificationHelper {
+    fun areNotificationsEnabled(): Boolean
+    fun openNotificationSettings()
+    fun isFirstRun(): Boolean
+}
+</div><p id="271a297e_2457">AndroidModule)</p><div class="code-block" data-lang="kotlin"         >
+actual interface NotificationHelper {
+    actual fun areNotificationsEnabled(): Boolean
+    actual fun openNotificationSettings()
+    actual fun isFirstRun(): Boolean
+}
+</div><p id="271a297e_2459">AndroidProject)</p><div class="code-block" data-lang="kotlin"         >
+class AOSNotificationHelper(private val context: Context) : NotificationHelper {
+    override fun areNotificationsEnabled(): Boolean {
+        return NotificationManagerCompat.from(context).areNotificationsEnabled()
+    }
+
+    override fun openNotificationSettings() {
+        val intent = Intent().apply {
+            action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
+            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+        }
+        context.startActivity(intent)
+    }
+
+    override fun isFirstRun(): Boolean {
+        val sharedPreferences = context.getSharedPreferences(&quot;MyAppPreferences&quot;, Context.MODE_PRIVATE)
+        if (sharedPreferences.getBoolean(&quot;isFirstRun&quot;, true)) {
+            sharedPreferences.edit().putBoolean(&quot;isFirstRun&quot;, false).apply()
+            return true
+        }
+        return false
+    }
+
+}
+</div><p id="271a297e_2461">IOSModule)</p><div class="code-block" data-lang="kotlin"         >
+actual interface NotificationHelper {
+    actual fun areNotificationsEnabled(): Boolean
+    actual fun openNotificationSettings()
+    actual fun isFirstRun(): Boolean
+}
+</div><p id="271a297e_2463">SwiftProject)</p><div class="code-block" data-lang="swift"         >
+추가바람
+</div></section><section class="chapter"><h2 id="locationinterface" data-toc="locationinterface"   >LocationInterface</h2><ul class="list _ul" id="271a297e_2465"><li class="list__item" id="271a297e_2466"><p>해당 프로젝트의 경우 사진을 촬영했을 때, 사진을 촬영한 위치의 정보가 또 필요했음.</p></li><li class="list__item" id="271a297e_2467"><p>역시 expect/actual 을 통해 각 플랫폼에 맞게 구축 및 개발 진행</p><br><p> SharedModule)</p></li></ul><div class="code-block" data-lang="kotlin"         >
+interface LocationInterface {
+    fun getCurrentLocation()
+}
+expect abstract class PlatformLocationManager(): LocationInterface {
+    val lat: StateFlow&lt;Double&gt;
+    val long: StateFlow&lt;Double&gt;
+}
+</div><p id="271a297e_2470">AndroidModule)</p><div class="code-block" data-lang="kotlin"         >
+actual abstract class PlatformLocationManager: LocationInterface {
+    protected val _lat = MutableStateFlow&lt;Double&gt;(0.0)
+    protected val _long = MutableStateFlow&lt;Double&gt;(0.0)
+    actual val lat: StateFlow&lt;Double&gt;
+        get() = _lat
+    actual val long: StateFlow&lt;Double&gt;
+        get() = _long
+
+}
+</div><p id="271a297e_2472">AndroidProject)</p><div class="code-block" data-lang="kotlin"         >
+class LocationManger(private val context: Context): PlatformLocationManager() {
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+
+    fun init() {
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+    }
+
+    override fun getCurrentLocation() {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(context as Activity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
+        } else {
+            val task: Task&lt;Location&gt; = fusedLocationClient.lastLocation
+            task.addOnSuccessListener { location: Location? -&gt;
+                if (location != null) {
+                    // 위치가 업데이트될 때 호출.
+                    val latitude = location.latitude
+                    val longitude = location.longitude
+                    // 여기서 위도와 경도를 사용.
+
+                    _lat.value = latitude
+                    _long.value = longitude
+                    Log.i(&quot;LocationManager&quot;, &quot;location is $latitude, $longitude&quot;)
+                }
+
+            }
+            task.addOnFailureListener {
+                // 위치 정보 가져오기 실패 처리
+            }
+        }
+    }
+}
+</div></section><div class="last-modified"> Last modified: 17 1월 2024</div><div data-feedback-placeholder="true"></div><div class="navigation-links _bottom">  <a class="navigation-links__prev" href="basic-module.html">Basic Module</a>   </div></article><div id="disqus_thread"></div></div></section></main></div>  <script src="https://resources.jetbrains.com/writerside/apidoc/6.6.6-b205/app.js"></script></body></html>

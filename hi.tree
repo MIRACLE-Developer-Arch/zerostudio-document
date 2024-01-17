@@ -3,7 +3,7 @@
         SYSTEM "https://resources.jetbrains.com/writerside/1.0/product-profile.dtd">
 
 <instance-profile id="hi"
-                 name="Zero Studio Code Module"
+                 name="ZeroStudioCodeModule"
                  start-page="Code-Module.md">
 
     <toc-element topic="Code-Module.md">

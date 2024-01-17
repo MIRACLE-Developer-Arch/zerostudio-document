@@ -122,6 +122,7 @@ fun renderMapByGEO(latFlow: StateFlow<Double?>, lngFlow: StateFlow<Double?>, col
     }
 }
 ```
+{ collapsible="true" }
 ### Vector 이미지를 BitmapDescriptor 로 변환하는 함수
 ```Kotlin
 fun bitmapDescriptorFromVector(context: Context, tintColor: Int? = null): BitmapDescriptor {
@@ -143,6 +144,8 @@ fun bitmapDescriptorFromVector(context: Context, tintColor: Int? = null): Bitmap
     return BitmapDescriptorFactory.fromBitmap(bitmap)
 }
 ```
+{ collapsible="true" default-state="expanded" }
+
 IOSModule)
 ```Kotlin
 class MapController(): PlatformMapImplementation() {
@@ -288,6 +291,8 @@ fun renderMapByGEO(
     )
 }
 ```
+{ collapsible="true" }
+
 SwiftProject)
 ```Swift
 추가바람

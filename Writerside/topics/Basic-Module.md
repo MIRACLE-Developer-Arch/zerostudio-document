@@ -1,11 +1,24 @@
 # Basic Module
+**[KMM(Kotlin-MultiPlatform-Mobile)](https://kotlinlang.org/docs/multiplatform.html)** 의 가장 큰 장점은 코틀린 언어로 Android, IOS, Desktop, Wearable 등 여러 플랫폼을 단일 코드로 개발이 가능하다는 것이다.
+
+아래는 **[ZeroStudio](https://zerostudio.co.kr/)** 에서 사용중인 KMM의 가장 강력한 기능인 [expect/actual](https://kotlinlang.org/docs/multiplatform-expect-actual.html)을 사용하여 만든 모듈이며, 
+모든 제로스튜디오 일원들의 생산성 향상을 목적으로 제작되었음.
+
+
 ## KMM expect/actual
 ### 토스트메시지
-SharedModule)
+
+<tabs>
+<tab title="Shared">
+
 ````Kotlin
 expect fun toastMessage(context: Any?, message: String)
 ````
-AndroidModule)
+</tab>
+</tabs>
+<tabs>
+<tab title="Android">
+
 ````Kotlin
 actual fun toastMessage(context: Any?, message: String) {
     if (context != null) {
@@ -17,7 +30,10 @@ actual fun toastMessage(context: Any?, message: String) {
     }
 }
 ````
-IOSModule)
+{ collapsible="true" default-state="expanded" }
+</tab>
+<tab title="IOS">
+
 ````Kotlin
 actual fun toastMessage(context: Any?, message: String) {
     val toastLabel = UILabel()
@@ -50,8 +66,15 @@ actual fun toastMessage(context: Any?, message: String) {
     )
 }
 ````
+{collapsible="true" default-state="expanded" }
+</tab>
+</tabs>
+
+
 ### PDF View
-SharedModule)
+<tabs>
+<tab title="Shared">
+
 ````Kotlin
 @Composable
 expect fun PDFViewer(
@@ -59,7 +82,11 @@ expect fun PDFViewer(
     url: String
 )
 ````
-AndroidModule)
+</tab>
+</tabs>
+<tabs>
+<tab title="Android">
+
 ````Kotlin
 @Composable
 actual fun PDFViewer(
@@ -130,7 +157,10 @@ suspend fun downloadPdfFromUrl(context: Context, pdfUrl: String): Pair<Uri, File
     }
 }
 ````
-IOS Module)
+{ collapsible="true" collapsed-title="actual fun PDFViewer()"}
+</tab>
+<tab title="IOS">
+
 ````Kotlin
 @OptIn(ExperimentalForeignApi::class)
 @Composable
@@ -161,22 +191,34 @@ actual fun PDFViewer(
     }
 }
 ````
+{ collapsible="true" collapsed-title="actual fun PDFViewer()"}
+</tab>
+</tabs>
+
 ### 디바이스에 설정된 폰트크기에 상관없이 글자 크기 DP로 고정 함수
-SharedModule)
+<tabs>
+<tab title="Shared">
+
 ````Kotlin
     @Composable
     fun fixedFontSize(dpSize: Dp): TextUnit {
         return with(LocalDensity.current) { dpSize.toSp() }
     }
 ````
+</tab>
+</tabs>
+
 * 해당 함수는 SharedUtil 내부에 포함되어있음
 
 
-### Custom MVVM
+## Custom MVVM
 * Compose Multiplatform 에서 제공해주는 여러 MVVM라이브러리들이 존재하지만, 외주의 상황과 요청에 따라 자유자재로 커스텀하기 위함
 * 커스텀을 사용하는 만큼 자유도가 높기 때문에, 외주의 성격과 상황을 잘 고려해서 유동적으로 클래스 내부의 함수나 변수들은 변경될 수 있음
 * 아래 예제는 Thanks_CarBon 의 Haimdall 프로젝트에서 사용된 커스텀 모델과 커스텀 뷰모델  
-  Model)
+
+<tabs>
+<tab title="Model">
+
 ```Kotlin
 interface Model {
     fun onCleared()
@@ -207,49 +249,11 @@ abstract class BaseModel: Model, CoroutineScope {
     }
 }
 ```
-ModelFactory)
-```Kotlin
-interface ModelFactory {
-    fun createModel(screen: Screen): Model?
-    fun clearModel()
-}
-class ConcreteModelFactory(
-    private val firebaseOperations: FirebaseOperations,
-    private val appleLoginClient: PlatformAppleLoginClient?,
-    private val notificationHelper: NotificationHelper,
-    private val locationInterface: PlatformLocationManager
-): ModelFactory {
-    private val sharedFirebaseController = SharedFirebaseController(firebaseOperations)
-    override fun createModel(screen: Screen): Model? {
-        return when (screen) {
-            Screen.SPLASH -> Model_Splash(sharedFirebaseController)
-            Screen.LOGIN -> Model_Login(sharedFirebaseController, appleLoginClient)
-            Screen.MAIN -> Model_Main(sharedFirebaseController, locationInterface, notificationHelper)
-            Screen.AGREEMENT -> Model_Agreement(sharedFirebaseController)
-            Screen.USER_REGISTER_FIND_BY_NAME -> Model_UserRegister_FindByName(sharedFirebaseController)
-            Screen.USER_REGISTER -> Model_UserRegister(sharedFirebaseController)
-            is Screen.PLANTING_RICE_INFO -> {
-                (if (screen.selectedFarmLandIdx != null) screen.selectedFarmLandIdx else null)?.let {
-                    Model_PlantingRiceInfo(sharedFirebaseController, it)
-                }
-            }
-            Screen.FARM_INFO -> Model_FarmInfo(sharedFirebaseController)
-            Screen.ADD_FARMLAND -> Model_AddFarmLand(sharedFirebaseController)
-            Screen.MY_PROFILE -> Model_MyProfile(sharedFirebaseController, notificationHelper)
-            is Screen.PDF -> { Model_PDF(sharedFirebaseController, screen.type) }
-            is Screen.CHANGE_WATERING_DATE -> {
-                (if (screen.selectedFarmLandIdx != null) screen.selectedFarmLandIdx else null)?.let {
-                    Model_ChangeWateringDate(sharedFirebaseController, it)
-                }
-            }
-        }
-    }
+{ collapsible="true" collapsed-title="abstract class BaseModel: Model, CoroutineScope" default-state="expanded"}
+</tab>
 
-    override fun clearModel() {}
+<tab title="ViewModel">
 
-}
-```
-ViewModel)
 ```Kotlin
 interface ViewModel {
     fun init()
@@ -308,7 +312,60 @@ abstract class BaseViewModel(val model: BaseModel?): ViewModel, CoroutineScope {
     }
 }
 ```
-ViewModelFactory)
+{ collapsible="true" collapsed-title="abstract class BaseViewModel(val model: BaseModel?)" default-state="expanded"}
+</tab>
+</tabs>
+
+
+<tabs>
+<tab title="ModelFactory">
+
+```Kotlin
+interface ModelFactory {
+    fun createModel(screen: Screen): Model?
+    fun clearModel()
+}
+class ConcreteModelFactory(
+    private val firebaseOperations: FirebaseOperations,
+    private val appleLoginClient: PlatformAppleLoginClient?,
+    private val notificationHelper: NotificationHelper,
+    private val locationInterface: PlatformLocationManager
+): ModelFactory {
+    private val sharedFirebaseController = SharedFirebaseController(firebaseOperations)
+    override fun createModel(screen: Screen): Model? {
+        return when (screen) {
+            Screen.SPLASH -> Model_Splash(sharedFirebaseController)
+            Screen.LOGIN -> Model_Login(sharedFirebaseController, appleLoginClient)
+            Screen.MAIN -> Model_Main(sharedFirebaseController, locationInterface, notificationHelper)
+            Screen.AGREEMENT -> Model_Agreement(sharedFirebaseController)
+            Screen.USER_REGISTER_FIND_BY_NAME -> Model_UserRegister_FindByName(sharedFirebaseController)
+            Screen.USER_REGISTER -> Model_UserRegister(sharedFirebaseController)
+            is Screen.PLANTING_RICE_INFO -> {
+                (if (screen.selectedFarmLandIdx != null) screen.selectedFarmLandIdx else null)?.let {
+                    Model_PlantingRiceInfo(sharedFirebaseController, it)
+                }
+            }
+            Screen.FARM_INFO -> Model_FarmInfo(sharedFirebaseController)
+            Screen.ADD_FARMLAND -> Model_AddFarmLand(sharedFirebaseController)
+            Screen.MY_PROFILE -> Model_MyProfile(sharedFirebaseController, notificationHelper)
+            is Screen.PDF -> { Model_PDF(sharedFirebaseController, screen.type) }
+            is Screen.CHANGE_WATERING_DATE -> {
+                (if (screen.selectedFarmLandIdx != null) screen.selectedFarmLandIdx else null)?.let {
+                    Model_ChangeWateringDate(sharedFirebaseController, it)
+                }
+            }
+        }
+    }
+
+    override fun clearModel() {}
+}
+```
+{ collapsible="true" collapsed-title="class ConcreteModelFactory()" default-state="expanded"}
+
+</tab>
+
+<tab title="ViewModelFactory">
+
 ```Kotlin
 class ViewModelFactory(
     private val modelFactory: ModelFactory,
@@ -358,15 +415,31 @@ class ViewModelFactory(
     }
 }
 ```
-### KMM 프로젝트에서 공유모듈에서 이미지랑 폰트를 불러와서 사용하는 방법
-* moko-resources 라이브러리를 필요로 함
-    - https://github.com/icerockdev/moko-resources
-* sharedModule root 디렉터리에 resources폴더를 추가로 생성해줘야함
-* resources폴더 내부 MR폴더 생성, 필요한 타입의 폴더를 생성해줌
-* 폴더 계층 구조는 다음과 같다.
-* 각 폴더에 필요한 파일을 두고 IDE에서 Sync를 수행하면 자동으로 임포트됨
-* 찾을 수 없다고 빨간줄이 뜰텐데, Sync를 수행했으면 실행은 제대로 되니 겁먹지 말자  
-  ex)
+{ collapsible="true" default-state="expanded"}
+</tab>
+</tabs>
+
+
+
+### KMM 프로젝트에서 공유모듈에서 이미지랑 폰트를 불러와서 사용하는 방법  
+
+
+Start
+:
+1. [MOKO-resources](https://github.com/icerockdev/moko-resources) 라이브러리를 필요로 함
+2. sharedModule root 디렉터리에 resources폴더를 추가로 생성해줘야함
+3. resources폴더 내부 MR폴더 생성, 필요한 타입의 폴더를 생성해줌
+4. 각 폴더에 필요한 파일을 두고 IDE에서 Sync를 수행하면 자동으로 임포트됨
+
+<note>
+  <p>
+    찾을 수 없다고 빨간줄이 뜰텐데, Sync를 수행했으면 실행은 제대로 되니 겁먹지 말자
+  </p>
+</note>
+
+
+폴더 계층 구조는 다음과 같다
+
 ```text
 shared
   │
@@ -376,8 +449,11 @@ shared
   │           └── resources
   │                 └── MR
   │                     ├── fonts/ <- .ttf 파일들이 위치함
-  │                     └── images/ <- .svg / .png 파일들이 위치함
+  │                     └── images/ <- .svg 또는 .png 파일들이 위치함
 ```
+<tabs>
+<tab title="Image">
+
 ```Kotlin
 @Composable
 fun loadImageResource(imageFile: ImageFile) : Painter {
@@ -396,7 +472,11 @@ fun loadImageResource(imageFile: ImageFile) : Painter {
 
     return painterResource(resId)
 }
+```
+</tab>
+<tab title="Font">
 
+```Kotlin
 @Composable
 fun loadFontResource(fontStyle: FontStyle) : FontFamily {
     val fontId = when (fontStyle) {
@@ -410,3 +490,5 @@ fun loadFontResource(fontStyle: FontStyle) : FontFamily {
     return fontFamilyResource(fontId)
 }
 ```
+</tab>
+</tabs>

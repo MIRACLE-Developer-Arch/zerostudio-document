@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE instance-profile
+        SYSTEM "https://resources.jetbrains.com/writerside/1.0/product-profile.dtd">
+
+<instance-profile id="hi"
+                 name="Zero Studio Code Module"
+                 start-page="Code-Module.md">
+
+    <toc-element topic="Code-Module.md">
+        <toc-element topic="ThanksCarBon.md"/>
+        <toc-element topic="Basic-Module.md"/>
+    </toc-element>
+</instance-profile>

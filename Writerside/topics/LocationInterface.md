@@ -11,7 +11,8 @@ How To Start Android
 ```
 
 How To Start IOS
-: 추가바람
+:
+1. info.plist에 Privacy - Location When In Use Usage Description 추가
 
 <tabs>
 <tab title="Shared">
@@ -98,3 +99,38 @@ class LocationManger(private val context: Context): PlatformLocationManager() {
 { collapsible="true" default-state="collapsed" }
 </tab>
 </tabs>
+
+<tabs>
+<tab title="Swift">
+```Swift
+import CoreLocation
+
+class IOSLocationManager: PlatformLocationManager, CLLocationManagerDelegate {
+    private var locationManager = CLLocationManager()
+    
+    override init() {
+        super.init()
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+    }
+    
+    func requestLocationPermission() {
+        locationManager.requestWhenInUseAuthorization()
+    }
+
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        if let location = locations.last {
+            _lat.setValue(location.coordinate.latitude)
+            _long.setValue(location.coordinate.longitude)
+            print("Latitude: \(location.coordinate.latitude), Longitude: \(location.coordinate.longitude)")
+            
+            locationManager.stopUpdatingLocation()
+        }
+    }
+    
+    override func getCurrentLocation() {
+        locationManager.startUpdatingLocation()
+    }
+}
+```
+</tab>

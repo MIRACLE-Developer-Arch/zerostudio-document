@@ -18,9 +18,9 @@ override fun onCreate(savedInstanceState: Bundle?) {
 
 How To Start IOS
 :
-1. [Maps SDK 설치 - CocoaPods 사용](https://developers.google.com/maps/documentation/ios-sdk/config?hl=ko#download-sdk)
-2.
-3.
+1. [API 사용 설정](https://developers.google.com/maps/documentation/ios-sdk/cloud-setup?hl=ko#enabling-apis)
+2. [Maps SDK 설치 - CocoaPods 사용](https://developers.google.com/maps/documentation/ios-sdk/config?hl=ko#download-sdk)
+3. [앱에 API키 추가](https://developers.google.com/maps/documentation/ios-sdk/config?hl=ko#get-key)
 
 
 

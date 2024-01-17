@@ -10,4 +10,8 @@
         <description>Created after removal of "This is the first topic" from Help Instance</description>
         <accepts>Default-topic.html</accepts>
     </rule>
+    <rule id="2b036376">
+        <description>Created after removal of "Starter" from Zero Studio Code Module</description>
+        <accepts>Starter.html</accepts>
+    </rule>
 </rules>

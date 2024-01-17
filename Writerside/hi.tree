@@ -4,8 +4,9 @@
 
 <instance-profile id="hi"
                  name="Zero Studio Code Module"
-                 start-page="Code-Module.md">
+                 start-page="Overview.md">
 
+    <toc-element topic="Overview.md"/>
     <toc-element topic="Code-Module.md">
         <toc-element topic="Basic-Module.md"/>
         <toc-element topic="ThanksCarBon.md"/>

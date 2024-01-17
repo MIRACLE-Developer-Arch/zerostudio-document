@@ -17,7 +17,10 @@ override fun onCreate(savedInstanceState: Bundle?) {
 ```
 
 How To Start IOS
-: 추가바람
+:
+1. [Maps SDK 설치 - CocoaPods 사용](https://developers.google.com/maps/documentation/ios-sdk/config?hl=ko#download-sdk)
+2.
+3.
 
 
 

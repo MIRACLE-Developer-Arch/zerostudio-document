@@ -7,7 +7,7 @@
                  start-page="Code-Module.md">
 
     <toc-element topic="Code-Module.md">
-        <toc-element topic="ThanksCarBon.md"/>
         <toc-element topic="Basic-Module.md"/>
+        <toc-element topic="ThanksCarBon.md"/>
     </toc-element>
 </instance-profile>

@@ -4,7 +4,17 @@
 
 { collapsible = true default-state = collapsed }
 How To Start Android
-: 추가바람
+: 
+1. Manifest에 추가
+```text
+        <service
+            android:name= ".MyFirebaseMessagingService"
+            android:exported= "false" >
+            <intent-filter>
+                <action android:name= "com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+```
 
 How To Start IOS
 : 추가바람
@@ -46,18 +56,6 @@ actual interface NotificationHelper {
 </tab>
 </tabs>
 <tabs>
-<tab title="AndroidManifest">
-
-```text
-        <service
-            android:name= ".MyFirebaseMessagingService"
-            android:exported= "false" >
-            <intent-filter>
-                <action android:name= "com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
-```
-</tab>
 <tab title="AndroidProject">
 
 ```Kotlin
@@ -144,6 +142,50 @@ class AOSNotificationHelper(private val context: Context) : NotificationHelper {
 추가바람
 </tab>
 <tab title="Swift">
-추가바람
+
+```Swift
+import UserNotifications
+import UIKit
+
+class IOSNotificationHelper: NotificationHelper {
+    func isFirstRun() -> Bool {
+        let userDefaults = UserDefaults.standard
+            if userDefaults.bool(forKey: "hasRunBefore") == false {
+                userDefaults.set(true, forKey: "hasRunBefore")
+                userDefaults.synchronize()
+                return true
+            }
+            return false
+    }
+    
+    func areNotificationsEnabled() -> Bool {
+        let semaphore = DispatchSemaphore(value: 0)
+        var isEnabled = false
+
+        UNUserNotificationCenter.current().getNotificationSettings { permission in
+            switch permission.authorizationStatus {
+            case .authorized:
+                isEnabled = true
+            case .denied:
+                isEnabled = false
+            case .notDetermined, .provisional, .ephemeral:
+                isEnabled = false
+            @unknown default:
+                isEnabled = false
+            }
+            semaphore.signal()
+        }
+
+        semaphore.wait()
+        return isEnabled
+    }
+    
+    func openNotificationSettings() {
+        if let url = URL(string: UIApplication.openSettingsURLString), UIApplication.shared.canOpenURL(url) {
+                    UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                }
+    }
+}
+```
 </tab>
 </tabs>

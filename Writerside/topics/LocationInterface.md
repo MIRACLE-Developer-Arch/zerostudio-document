@@ -102,6 +102,7 @@ class LocationManger(private val context: Context): PlatformLocationManager() {
 
 <tabs>
 <tab title="Swift">
+
 ```Swift
 import CoreLocation
 
@@ -134,3 +135,5 @@ class IOSLocationManager: PlatformLocationManager, CLLocationManagerDelegate {
 }
 ```
 </tab>
+</tabs>
+

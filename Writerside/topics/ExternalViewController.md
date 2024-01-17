@@ -71,7 +71,38 @@ class AOSExternalViewController(private var context: Context): PlatformExternalV
 <tab title="SwiftProject">
 
 ```Swift
-추가바람
+import MessageUI
+
+class IOSExternalViewController: PlatformExternalViewController {
+    func showEmailView(type: MailType) {
+        let email = "cs@incler.kr"
+        var url = URL(string: "mailto:\(email)")
+        
+        if type == MailType.request {
+            url = URL(string: "mailto:\(email)?subject= &body=" +
+                             "콘텐츠 신청 폼\n" +
+                             "•신청 콘텐츠는 일정 신청 수 이상일 경우\n" +
+                             "콘텐츠가 발행됩니다\n" +
+                             "\n" +
+                             "필수 기입*\n" +
+                             "기업명:\n" +
+                             "업종:\n" +
+                             "시장: K-OTC, 코넥스, 비상장 중 택 1\n" +
+                             "\n" +
+                             "선택 기입\n" +
+                      "기타 요청사항:")
+        }
+        UIApplication.shared.open(url!)
+        //mailto:[수신자 이메일 주소]?subject=[제목]&body=[본문]&cc=[참조]&bcc=[숨은 참조]
+        //mailto:example@example.com?subject=Meeting Request&body=Hi there,%0D%0A%0D%0APlease let me know your availability for a meeting next week.%0D%0AThank you!&cc=cc@example.com&bcc=bcc@example.com
+    }
+    
+    func showKakaoPlusFriend() {
+        if let url = URL(string: "http://pf.kakao.com/_xbxnZxjG") {
+            UIApplication.shared.open(url)
+        }
+    }
+}
 ```
 </tab>
 </tabs>

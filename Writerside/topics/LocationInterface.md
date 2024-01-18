@@ -98,10 +98,7 @@ class LocationManger(private val context: Context): PlatformLocationManager() {
 ```
 { collapsible="true" default-state="collapsed" }
 </tab>
-</tabs>
-
-<tabs>
-<tab title="Swift">
+<tab title="SwiftProject">
 
 ```Swift
 import CoreLocation
@@ -134,6 +131,7 @@ class IOSLocationManager: PlatformLocationManager, CLLocationManagerDelegate {
     }
 }
 ```
+{ collapsible="true" default-state="collapsed" }
 </tab>
 </tabs>
 

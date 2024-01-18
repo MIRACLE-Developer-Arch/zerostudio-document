@@ -19,7 +19,10 @@ implementation("com.android.billingclient:billing-ktx:6.1.0")
 
 How To Start IOS
 :
-추가바람
+1. App Store Connect에서 계약, 세금 및 금융거래 탭에서 유료 앱에 대한 약관 동의 수행
+2. App Store Connect에 앱 추가
+3. In App Purchase 상품 추가
+4. Sandbox 계정 생성 -> 테스트를 위함
 
 
 <tabs>
@@ -308,6 +311,148 @@ data class AOSPurchaseHelper(val activity: Activity): PurchaseHelper() {
 { collapsible="true" default-state="collapsed" }
 </tab>
 <tab title="SwiftProject">
-추가바람
+
+```Swift
+import StoreKit
+
+class IOSPurchaseHelper: PurchaseHelper, SKProductsRequestDelegate {
+    private var productsRequest: SKProductsRequest?
+    // StoreKit 트랜잭션 관찰자 및 상품 목록 저장
+    private var availableProductsMap = [String: SKProduct]()
+ 
+    // 초기화 및 트랜잭션 관찰자 설정
+    override init() {
+        super.init()
+        SKPaymentQueue.default().add(self)
+    }
+    
+    override func resetAll() {
+        _availableProducts.setValue([])
+        _purchaseCompleted.resetReplayCache()
+        _clientPurchaseProgress.setValue(false)
+    }
+    
+    // 상품 구매 요청
+    override func makePurchase(selectedProductId: String) {
+        guard let product = availableProductsMap[selectedProductId] else {
+            return
+        }
+        let payment = SKPayment(product: product)
+        SKPaymentQueue.default().add(payment)
+    }
+    
+    override func billingSetup(productIds: [String]) {
+        queryProduct(productIds: productIds)
+    }
+    
+    // 상품 정보 요청
+    override func queryProduct(productIds: [String]) {
+        let productIdentifiers = Set(productIds)
+        productsRequest?.cancel()
+        productsRequest = SKProductsRequest(productIdentifiers: productIdentifiers)
+        productsRequest?.delegate = self
+        productsRequest?.start()
+    }
+    
+    // 상품 정보 요청 결과
+    func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
+        
+        for product in response.products {
+            availableProductsMap[product.productIdentifier] = product
+        }
+        
+
+        _availableProducts.setValue(response.products.map { product in
+            let priceFormatter = NumberFormatter()
+            priceFormatter.numberStyle = .currency
+            priceFormatter.locale = product.priceLocale
+            let priceString = priceFormatter.string(from: product.price) ?? ""
+            
+            return CustomProductDetails(productId: product.productIdentifier, name: product.localizedTitle, description: product.localizedDescription, price: priceString)
+        })
+    }
+}
+
+extension IOSPurchaseHelper: SKPaymentTransactionObserver {
+    
+    func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
+        for transaction in transactions {
+            switch transaction.transactionState {
+            case .purchased:
+                // 구매 완료 처리
+                completeTransaction(transaction)
+            case .failed:
+                // 구매 실패 처리
+                failedTransaction(transaction)
+            case .restored:
+                // 복원된 구매 처리
+                break
+            case .deferred, .purchasing:
+                _clientPurchaseProgress.setValue(true)
+                // 처리 중 또는 사용자의 결정을 기다리는 경우
+                break
+            @unknown default:
+                // 알 수 없는 새로운 상태 처리
+                break
+            }
+        }
+    }
+    
+    private func completeTransaction(_ transaction: SKPaymentTransaction) {
+        // 구매 세부 사항 처리 로직
+        _clientPurchaseProgress.setValue(false)
+        _buyEnabled.setValue(false)
+        _consumeEnabled.setValue(true)
+        
+        let purchaseSaveInfo = PurchaseSaveInfo(ProductID: transaction.payment.productIdentifier,
+                                                OrderID: transaction.transactionIdentifier,
+                                                PurchaseState: nil,
+                                                PurchaseTime: KotlinLong(value: Int64((transaction.transactionDate?.timeIntervalSince1970 ?? 0) * 1000)),
+                                                PurchaseToken: nil,
+                                                PurchaseReceipt: loadReceipt())
+
+        _purchaseCompleted.emit(value: purchaseSaveInfo) { error in
+            if error != nil {
+                SharedUtil.shared.Log(text: "Error Occur in verifying Receipt")
+            } else {
+                self._statusText.setValue("Purchase Complete")
+                SharedUtil.shared.Log(text: "Success to Purchase : \(transaction.payment.productIdentifier)")
+            }
+        }
+
+        // 트랜잭션 완료
+        SKPaymentQueue.default().finishTransaction(transaction)
+    }
+    
+    // 구매 실패 처리
+    private func failedTransaction(_ transaction: SKPaymentTransaction) {
+        if let error = transaction.error as? SKError {
+            // 오류 처리 로직
+            _clientPurchaseProgress.setValue(false)
+        }
+        
+        // 트랜잭션 완료
+        SKPaymentQueue.default().finishTransaction(transaction)
+    }
+    
+    // 구매 내역 영수증 로드
+    func loadReceipt() -> String? {
+        guard let receiptURL = Bundle.main.appStoreReceiptURL,
+              FileManager.default.fileExists(atPath: receiptURL.path) else {
+            return nil
+        }
+        
+        do {
+            let receiptData = try Data(contentsOf: receiptURL)
+            let receiptString = receiptData.base64EncodedString(options: [])
+            return receiptString
+        } catch {
+            print("Error loading receipt data: \(error.localizedDescription)")
+            return nil
+        }
+    }
+}
+```
+{ collapsible="true" default-state="collapsed" }
 </tab>
 </tabs>
